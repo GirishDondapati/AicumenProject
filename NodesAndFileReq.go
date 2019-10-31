@@ -29,8 +29,7 @@ func main() {
 		fmt.Println("2: Insert data")
 		fmt.Scanln(&input)
 		if input == 1 {
-			//displayAllFileNames()
-			//fmt.Println("Total Size: ", totSize)
+			displayAllFileNames()
 			fmt.Println(getFilesDetails())
 			fmt.Println("")
 		} else if input == 2 {
@@ -52,6 +51,8 @@ func main() {
 				fileVersion := getlatestVersionId(fileNameExt)
 				fmt.Println("fileVersion Number: ", fileVersion)
 				write_content(nodes[ranNo], fileVersion+1, content, fileNameExt)
+				displayAllFileNames()
+				fmt.Println(getFilesDetails())
 				fmt.Println("")
 			} else {
 				fmt.Println("Enter content is empty. So data not inserted")
@@ -113,17 +114,20 @@ func IOReadDir() ([]string, error) {
 		wg.Wait()
 	}
 	for {
+		//data,status := <-respChan
 		select {
 		case data := <-respChan:
 			{
 				files = append(files, data.files...)
 				totSize += data.totalSize
 			}
-		case <-time.After(30 * time.Second):
+		case <-time.After(10 * time.Second):
 			fmt.Println("time out")
+			close(respChan)
 			return files, nil
 		default:
-			fmt.Println("default.......")
+			//fmt.Println("default.......")
+			close(respChan)
 			return files, nil
 		}
 	}
@@ -150,8 +154,8 @@ func getfilesAndSize(fileInfo []os.FileInfo, res chan respStruct) {
 func calculateSize() {
 	for {
 		select {
-		case <-time.After(5 * time.Minute):
-			fmt.Println("calculating tot")
+		case <-time.After(15 * time.Minute):
+			//fmt.Println("calculating tot")
 			displayAllFileNames()
 		}
 	}
@@ -171,7 +175,7 @@ func write_content(drivePath string, version int64, content string, fileNameExt 
 	}
 	fi, _ := file1.Stat()
 	totSize += fi.Size()
-	fmt.Println("Total Size: ", totSize)
+	//fmt.Println("Total Size: ", totSize)
 }
 
 func random(min, max int) int {
